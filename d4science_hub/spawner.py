@@ -1,36 +1,11 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
+from jupyterhub.utils import maybe_future
 from kubespawner import KubeSpawner
-from traitlets import Bool, Dict, List, Unicode
+from traitlets import Bool, Callable, Dict, List, Unicode
 
 
 class D4ScienceSpawner(KubeSpawner):
-    frame_ancestors = Unicode(
-        "https://*.d4science.org 'self'",
-        config=True,
-        help="""Frame ancestors for embedding the hub in d4science""",
-    )
-    use_ophidia = Bool(
-        True,
-        config=True,
-        help="""Whether to enable or not the ophidia setup""",
-    )
-    ophidia_image = Unicode(
-        "ophidiabigdata/ophidia-backend-hub:v1.1",
-        config=True,
-        help="""Ophidia image""",
-    )
-    ophidia_user = Unicode(
-        "oph-test",
-        config=True,
-        help="""Ophidia user""",
-    )
-    ophidia_passwd = Unicode(
-        "abcd",
-        config=True,
-        help="""Ophidia password""",
-    )
     workspace_security_context = Dict(
         {
             "capabilities": {"add": ["SYS_ADMIN"]},
@@ -73,7 +48,7 @@ class D4ScienceSpawner(KubeSpawner):
             """,
     )
     server_options_names = List(
-        ["ServerOption", "RStudioServerOption"],
+        ["ServerOption", "RStudioServerOption", "webODVServerOption"],
         config=True,
         help="""Name of ServerOptions to consider from the D4Science Information
                 System. These can be then used for filtering with named servers""",
@@ -114,6 +89,20 @@ class D4ScienceSpawner(KubeSpawner):
         },
         config=True,
         help="""Configuration to add for GPU servers""",
+    )
+    extra_pre_spawn = Callable(
+        None,
+        allow_none=True,
+        config=True,
+        help="""
+        Callable to add extra configuration for the spawner during the pre_spawn_hook.
+
+        Expects a callable that takes one parameter:
+
+           1. The spawner object that is doing the spawning
+
+        This can be a coroutine if necessary. When set to none, no extra configruation is done.
+        """,
     )
 
     def __init__(self, *args, **kwargs):
@@ -272,25 +261,6 @@ class D4ScienceSpawner(KubeSpawner):
         self.log.debug("Profiles: %s", sorted_profiles)
         return sorted_profiles
 
-    def _configure_ophidia(self, spawner):
-        if not self.use_ophidia:
-            return
-        chosen_profile = spawner.user_options.get("profile", "")
-        if "ophidia" in chosen_profile:
-            ophidia_mounts = [
-                m for m in spawner.volume_mounts if m["name"] != "workspace"
-            ]
-            ophidia = {
-                "name": "ophidia",
-                "image": self.ophidia_image,
-                "volumeMounts": ophidia_mounts,
-            }
-            spawner.extra_containers.append(ophidia)
-            spawner.environment["OPH_USER"] = self.ophidia_user
-            spawner.environment["OPH_PASSWD"] = self.ophidia_passwd
-            spawner.environment["OPH_SERVER_HOST"] = "127.0.0.1"
-            spawner.environment["HDF5_USE_FILE_LOCKING"] = "FALSE"
-
     def _configure_workspace(self, spawner):
         token = spawner.environment.get("D4SCIENCE_TOKEN", "")
         if not token:
@@ -330,4 +300,6 @@ class D4ScienceSpawner(KubeSpawner):
         # TODO(enolfc): check whether assigning to [] is safe
         spawner.extra_containers = []
         self._configure_workspace(spawner)
-        self._configure_ophidia(spawner)
+        if self.extra_pre_spawn:
+            self.log.info("Calling extra_pre_spawn")
+            await maybe_future(self.extra_pre_spawn(spawner))
