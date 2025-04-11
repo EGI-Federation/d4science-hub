@@ -95,13 +95,14 @@ class D4ScienceSpawner(KubeSpawner):
         allow_none=True,
         config=True,
         help="""
-        Callable to add extra configuration for the spawner during the pre_spawn_hook.
+        Callable to add extra configuration for the spawner during the
+        pre_spawn_hook.
 
-        Expects a callable that takes one parameter:
+        Expects a callable that takes one parameter: The spawner object that
+        is doing the spawning
 
-           1. The spawner object that is doing the spawning
-
-        This can be a coroutine if necessary. When set to none, no extra configruation is done.
+        This can be a coroutine if necessary. When set to none, no extra
+        configruation is done.
         """,
     )
 
