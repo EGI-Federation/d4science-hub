@@ -1,4 +1,4 @@
-<!-- htmlhint doctype-first:false -->
+<!-- htmlhint doctype-first:false,id-class-value:false -->
 {% extends "templates/home.html" %}
 {% block main %}
 <div class="container">
@@ -20,7 +20,7 @@
         {# name #}
         <td>
           {% if spawner.name %}{{ spawner.name.split("-")[1].replace("ServerOption", "") }}
-	  {% else %}Jupyter{% endif %}
+          {% else %}Jupyter{% endif %}
         </td>
         {# url #}
         <td>
