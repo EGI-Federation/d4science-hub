@@ -131,7 +131,7 @@ class D4ScienceSpawner(KubeSpawner):
             "--ResourceUseDisplay.track_cpu_percent=True",
             "--NotebookApp.iopub_data_rate_limit=100000000",
             "--SingleUserNotebookApp.default_url=%s" % url,
-            "--ServerApp.default_url=%s" % url]
+            "--ServerApp.default_url=%s" % url,
         ] + args
 
     def get_volume_name(self, name):
