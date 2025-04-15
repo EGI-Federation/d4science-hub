@@ -124,11 +124,14 @@ class D4ScienceSpawner(KubeSpawner):
     def get_args(self):
         args = super().get_args()
         # TODO: check if this keeps making sense
+        url = "/rstudio" if "rstudio" in self.name.lower() else self.default_url
         return [
             "--FileCheckpoints.checkpoint_dir='/home/jovyan/.notebookCheckpoints'",
             "--FileContentsManager.use_atomic_writing=False",
             "--ResourceUseDisplay.track_cpu_percent=True",
             "--NotebookApp.iopub_data_rate_limit=100000000",
+            "--SingleUserNotebookApp.default_url=%s" % url,
+            "--ServerApp.default_url=%s" % url]
         ] + args
 
     def get_volume_name(self, name):
