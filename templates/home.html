@@ -1,0 +1,53 @@
+<!-- htmlhint doctype-first:false,id-class-value:false -->
+{% extends "templates/home.html" %}
+{% block main %}
+<div class="container">
+  <h2>Servers</h2>
+
+  {% set named_spawners = user.all_spawners(include_default=True)|list %}
+  <table class="server-table table table-striped">
+    <thead>
+      <tr>
+        <th>Server option</th>
+        <th>URL</th>
+        <th>Last activity</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for spawner in named_spawners %} {% if spawner.active %}
+      <tr class="home-server-row" data-server-name="{{ spawner.name }}">
+        {# name #}
+        <td>
+          {% if spawner.name %}{{ spawner.name.split("-")[1].replace("ServerOption", "") }}
+          {% else %}Jupyter{% endif %}
+        </td>
+        {# url #}
+        <td>
+          <a
+            class="server-link {% if not spawner.ready %}hidden{% endif %}"
+            href="{{ user.server_url(spawner.name) }}"
+          >
+            {{ user.server_url(spawner.name) }}
+          </a>
+        </td>
+        {# activity #}
+        <td class="time-col">
+          {% if spawner.last_activity %} {{ spawner.last_activity.isoformat() + 'Z' }} {% else %} Never {% endif %}
+        </td>
+        {# actions #}
+        <td>
+          <a
+            role="button"
+            class="{{ 'stop-server' if spawner.name }} btn btn-s btn-danger{% if not spawner.active %} hidden{% endif %}"
+            id="stop{{ '-' if spawner.name}}{{ spawner.name }}"
+          >
+            Stop
+          </a>
+        </td>
+      </tr>
+      {% endif %} {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock main %}
