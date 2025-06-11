@@ -73,7 +73,7 @@ class D4ScienceSpawner(KubeSpawner):
             """,
     )
     server_options_names = List(
-        ["ServerOption", "RStudioServerOption"],
+        ["ServerOption", "RStudioServerOption", "WITOILServerOption"],
         config=True,
         help="""Name of ServerOptions to consider from the D4Science Information
                 System. These can be then used for filtering with named servers""",
@@ -93,6 +93,11 @@ class D4ScienceSpawner(KubeSpawner):
         "Data-Manager",
         config=True,
         help="""Name of the data manager role in D4Science""",
+    )
+    witoil_role = Unicode(
+        "WITOIL-User",
+        config=True,
+        help="""Name of the role required to access WITOILServerOption in D4Science""",
     )
     context_namespaces = Bool(
         False,
@@ -147,7 +152,6 @@ class D4ScienceSpawner(KubeSpawner):
     async def auth_state_hook(self, spawner, auth_state):
         if not auth_state:
             return
-        # just get from the authenticator
         permissions = auth_state.get("permissions", [])
         roles = auth_state.get("roles", [])
         self.log.debug("Roles at hook: %s", roles)
@@ -163,6 +167,9 @@ class D4ScienceSpawner(KubeSpawner):
                 p = opt.get("Profile", {}).get("Body", {})
                 if p.get("ServerOption", None):
                     name = opt.get("Profile", {}).get("Name", "")
+                    # Add WITOILServerOption ONLY, if user has the required role
+                    if name == "WITOILServerOption" and self.witoil_role not in roles:
+                        continue
                     if name in self.server_options_names:
                         self.server_options[p["ServerOption"]["AuthId"]] = p[
                             "ServerOption"
