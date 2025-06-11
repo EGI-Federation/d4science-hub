@@ -90,13 +90,14 @@ class D4ScienceSpawner(KubeSpawner):
         config=True,
         help="""Configuration to add for GPU servers""",
     )
-    extra_pre_spawn = Callable(
+    custom_user_options = Callable(
         None,
         allow_none=True,
         config=True,
         help="""
         Callable to add extra configuration for the spawner during the
-        pre_spawn_hook.
+        load_user_options, which is called just at the begginig of the
+        start() method.
 
         Expects a callable that takes one parameter: The spawner object that
         is doing the spawning
@@ -289,6 +290,12 @@ class D4ScienceSpawner(KubeSpawner):
         else:
             spawner.container_security_context = self.workspace_security_context
 
+    async def load_user_options(self):
+        await super().load_user_options()
+        if self.custom_user_options:
+            self.log.info("Calling custom_user_options")
+            await maybe_future(self.custom_user_options(self))
+
     async def pre_spawn_hook(self, spawner):
         context = spawner.environment.get("D4SCIENCE_CONTEXT", "")
         if context:
@@ -301,6 +308,3 @@ class D4ScienceSpawner(KubeSpawner):
         # TODO(enolfc): check whether assigning to [] is safe
         spawner.extra_containers = []
         self._configure_workspace(spawner)
-        if self.extra_pre_spawn:
-            self.log.info("Calling extra_pre_spawn")
-            await maybe_future(self.extra_pre_spawn(spawner))
