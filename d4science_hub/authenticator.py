@@ -1,5 +1,4 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
 import base64
 import json
@@ -134,7 +133,6 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
         try:
             resp = await http_client.fetch(req)
         except HTTPError as e:
-            # whatever, get out
             self.log.warning("Unable to get the permission for user: %s", e)
             raise web.HTTPError(403)
         self.log.debug("Got UMA ticket from server...")

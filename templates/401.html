@@ -1,0 +1,18 @@
+<!-- htmlhint doctype-first:false -->
+{% extends "error.html" %} {% block main %}
+
+<div class="error">
+  <h1>Unauthorized!</h1>
+  <p>
+    You are trying to access a restricted instance of the EGI Notebooks service.
+  </p>
+  <p>
+    This instance is accessed via
+    <a href="https://www.d4science.org/">D4Science</a>
+    VREs. Check your VRE manager for more information.
+  </p>
+  <p>
+    If you think you should be granted access already, please open an issue!
+  </p>
+</div>
+{% endblock %}

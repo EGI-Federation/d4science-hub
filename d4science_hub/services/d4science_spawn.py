@@ -21,10 +21,10 @@ class D4ScienceHandler(HubOAuthenticated, RequestHandler):
     @authenticated
     def get(self):
         user = self.get_current_user()
-        rname = self.request.path.split("/")[-1]
-        if rname:
-            rname = f"rname-{rname}"
-        dest_url = url_path_join("/hub/spawn/", user["name"], rname)
+        server_name = self.request.path.split("/")[-1]
+        if server_name:
+            server_name = f"rname-{server_name}"
+        dest_url = url_path_join("/hub/spawn/", user["name"], server_name)
         self.redirect(
             dest_url,
             permanent=False,

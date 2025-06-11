@@ -1,36 +1,11 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
+from jupyterhub.utils import maybe_future
 from kubespawner import KubeSpawner
-from traitlets import Bool, Dict, List, Unicode
+from traitlets import Bool, Callable, Dict, List, Unicode
 
 
 class D4ScienceSpawner(KubeSpawner):
-    frame_ancestors = Unicode(
-        "https://*.d4science.org 'self'",
-        config=True,
-        help="""Frame ancestors for embedding the hub in d4science""",
-    )
-    use_ophidia = Bool(
-        True,
-        config=True,
-        help="""Whether to enable or not the ophidia setup""",
-    )
-    ophidia_image = Unicode(
-        "ophidiabigdata/ophidia-backend-hub:v1.1",
-        config=True,
-        help="""Ophidia image""",
-    )
-    ophidia_user = Unicode(
-        "oph-test",
-        config=True,
-        help="""Ophidia user""",
-    )
-    ophidia_passwd = Unicode(
-        "abcd",
-        config=True,
-        help="""Ophidia password""",
-    )
     workspace_security_context = Dict(
         {
             "capabilities": {"add": ["SYS_ADMIN"]},
@@ -73,7 +48,7 @@ class D4ScienceSpawner(KubeSpawner):
             """,
     )
     server_options_names = List(
-        ["ServerOption", "RStudioServerOption"],
+        ["ServerOption", "RStudioServerOption", "webODVServerOption"],
         config=True,
         help="""Name of ServerOptions to consider from the D4Science Information
                 System. These can be then used for filtering with named servers""",
@@ -115,6 +90,22 @@ class D4ScienceSpawner(KubeSpawner):
         config=True,
         help="""Configuration to add for GPU servers""",
     )
+    custom_user_options = Callable(
+        None,
+        allow_none=True,
+        config=True,
+        help="""
+        Callable to add extra configuration for the spawner during the
+        load_user_options, which is called just at the begginig of the
+        start() method.
+
+        Expects a callable that takes one parameter: The spawner object that
+        is doing the spawning
+
+        This can be a coroutine if necessary. When set to none, no extra
+        configruation is done.
+        """,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -134,11 +125,14 @@ class D4ScienceSpawner(KubeSpawner):
     def get_args(self):
         args = super().get_args()
         # TODO: check if this keeps making sense
+        url = "/rstudio" if "rstudio" in self.name.lower() else self.default_url
         return [
             "--FileCheckpoints.checkpoint_dir='/home/jovyan/.notebookCheckpoints'",
             "--FileContentsManager.use_atomic_writing=False",
             "--ResourceUseDisplay.track_cpu_percent=True",
             "--NotebookApp.iopub_data_rate_limit=100000000",
+            "--SingleUserNotebookApp.default_url=%s" % url,
+            "--ServerApp.default_url=%s" % url,
         ] + args
 
     def get_volume_name(self, name):
@@ -153,7 +147,7 @@ class D4ScienceSpawner(KubeSpawner):
         self.log.debug("Roles at hook: %s", roles)
         self.allowed_profiles = [claim["rsname"] for claim in permissions]
         resources = auth_state.get("resources", {})
-        self.server_options = {}
+        self.server_options = []
         volume_options = {}
         try:
             resource_list = resources["genericResources"]["Resource"]
@@ -164,12 +158,9 @@ class D4ScienceSpawner(KubeSpawner):
                 if p.get("ServerOption", None):
                     name = opt.get("Profile", {}).get("Name", "")
                     if name in self.server_options_names:
-                        self.server_options[p["ServerOption"]["AuthId"]] = p[
-                            "ServerOption"
-                        ]
-                        self.server_options[p["ServerOption"]["AuthId"]].update(
-                            {"server_option_name": name}
-                        )
+                        option = p["ServerOption"]
+                        option.update({"server_option_name": name})
+                        self.server_options.append(option)
                 elif p.get("VolumeOption", None):
                     volume_options[p["VolumeOption"]["Name"]] = p["VolumeOption"][
                         "Permission"
@@ -220,9 +211,9 @@ class D4ScienceSpawner(KubeSpawner):
         )
 
         if self.allowed_profiles and self.server_options:
-            for allowed in self.allowed_profiles:
-                p = self.server_options.get(allowed, None)
-                if not p:
+            for p in self.server_options:
+                auth_id = p.get("AuthId", "")
+                if auth_id not in self.allowed_profiles:
                     continue
                 override = {}
                 name = p.get("Info", {}).get("Name", "")
@@ -258,7 +249,7 @@ class D4ScienceSpawner(KubeSpawner):
                 profile = {
                     "display_name": name,
                     "description": p.get("Info", {}).get("Description", ""),
-                    "slug": p.get("AuthId", ""),
+                    "slug": auth_id,
                     "kubespawner_override": override,
                     "default": p.get("@default", {}) == "true",
                 }
@@ -271,25 +262,6 @@ class D4ScienceSpawner(KubeSpawner):
         sorted_profiles = sorted(profiles, key=lambda x: x["display_name"])
         self.log.debug("Profiles: %s", sorted_profiles)
         return sorted_profiles
-
-    def _configure_ophidia(self, spawner):
-        if not self.use_ophidia:
-            return
-        chosen_profile = spawner.user_options.get("profile", "")
-        if "ophidia" in chosen_profile:
-            ophidia_mounts = [
-                m for m in spawner.volume_mounts if m["name"] != "workspace"
-            ]
-            ophidia = {
-                "name": "ophidia",
-                "image": self.ophidia_image,
-                "volumeMounts": ophidia_mounts,
-            }
-            spawner.extra_containers.append(ophidia)
-            spawner.environment["OPH_USER"] = self.ophidia_user
-            spawner.environment["OPH_PASSWD"] = self.ophidia_passwd
-            spawner.environment["OPH_SERVER_HOST"] = "127.0.0.1"
-            spawner.environment["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
     def _configure_workspace(self, spawner):
         token = spawner.environment.get("D4SCIENCE_TOKEN", "")
@@ -318,6 +290,12 @@ class D4ScienceSpawner(KubeSpawner):
         else:
             spawner.container_security_context = self.workspace_security_context
 
+    async def load_user_options(self):
+        await super().load_user_options()
+        if self.custom_user_options:
+            self.log.info("Calling custom_user_options")
+            await maybe_future(self.custom_user_options(self))
+
     async def pre_spawn_hook(self, spawner):
         context = spawner.environment.get("D4SCIENCE_CONTEXT", "")
         if context:
@@ -330,4 +308,3 @@ class D4ScienceSpawner(KubeSpawner):
         # TODO(enolfc): check whether assigning to [] is safe
         spawner.extra_containers = []
         self._configure_workspace(spawner)
-        self._configure_ophidia(spawner)
