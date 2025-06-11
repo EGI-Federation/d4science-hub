@@ -5,3 +5,6 @@ xmltodict
 fastapi[standard]
 pydantic-settings
 pbr
+# Optional dependencies for testing
+#pytest
+#pytest-asyncio
