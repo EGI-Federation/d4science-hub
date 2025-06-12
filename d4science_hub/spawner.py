@@ -163,12 +163,15 @@ class D4ScienceSpawner(KubeSpawner):
             if not isinstance(resource_list, list):
                 resource_list = [resource_list]
             for opt in resource_list:
-                p = opt.get("Profile", {}).get("Body", {})
+                profile = opt.get("Profile", {})
+                p = profile.get("Body", {})
                 if p.get("ServerOption", None):
-                    name = opt.get("Profile", {}).get("Name", "")
-                    # Add WITOILServerOption ONLY, if user has the required role
-                    if name == "WITOILServerOption" and self.witoil_role not in roles:
+                    # Check roles
+                    role = p["ServerOption"].get("@role", "")
+                    if role and role not in roles:
+                        logging.debug(f"ServerOption role {role} not in users roles, discarding")
                         continue
+                    name = profile.get("Name", "")
                     if name in self.server_options_names:
                         self.server_options[p["ServerOption"]["AuthId"]] = p[
                             "ServerOption"
