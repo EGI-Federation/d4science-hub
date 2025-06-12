@@ -34,3 +34,7 @@ async def test_build_options_role():
     server_opts, vol_opts = spawner.build_resource_options(roles, resources)
     assert "witoil-authid" in server_opts.keys()
     assert vol_opts == {}
+
+    server_opts, vol_opts = spawner.build_resource_options([], resources)
+    assert "witoil-authid" not in server_opts.keys()
+    assert vol_opts == {}
