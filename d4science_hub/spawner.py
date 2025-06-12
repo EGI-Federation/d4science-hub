@@ -93,11 +93,6 @@ class D4ScienceSpawner(KubeSpawner):
         config=True,
         help="""Name of the data manager role in D4Science""",
     )
-    witoil_role = Unicode(
-        "WITOIL-User",
-        config=True,
-        help="""Name of the role required to access WITOILServerOption in D4Science""",
-    )
     context_namespaces = Bool(
         False,
         config=True,
@@ -169,7 +164,9 @@ class D4ScienceSpawner(KubeSpawner):
                     # Check roles
                     role = p["ServerOption"].get("@role", "")
                     if role and role not in roles:
-                        logging.debug(f"ServerOption role {role} not in users roles, discarding")
+                        logging.debug(
+                            f"ServerOption role {role} not in users roles, discarding"
+                        )
                         continue
                     name = profile.get("Name", "")
                     if name in self.server_options_names:

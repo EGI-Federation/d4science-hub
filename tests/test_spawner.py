@@ -1,3 +1,5 @@
+"""Tests for the spawner"""
+
 import pytest
 from d4science_hub.spawner import D4ScienceSpawner
 
