@@ -143,15 +143,8 @@ class D4ScienceSpawner(KubeSpawner):
     def get_volume_name(self, name):
         return name.strip().lower().replace(" ", "-")
 
-    async def auth_state_hook(self, spawner, auth_state):
-        if not auth_state:
-            return
-        permissions = auth_state.get("permissions", [])
-        roles = auth_state.get("roles", [])
-        self.log.debug("Roles at hook: %s", roles)
-        self.allowed_profiles = [claim["rsname"] for claim in permissions]
-        resources = auth_state.get("resources", {})
-        self.server_options = {}
+    def build_resource_options(self, roles, resources):
+        server_options = {}
         volume_options = {}
         try:
             resource_list = resources["genericResources"]["Resource"]
@@ -163,6 +156,8 @@ class D4ScienceSpawner(KubeSpawner):
                 if p.get("ServerOption", None):
                     # Check roles
                     role = p["ServerOption"].get("@role", "")
+                    print(role)
+                    print("#" * 80)
                     if role and role not in roles:
                         self.log.debug(
                             f"ServerOption role {role} not in users roles, discarding"
@@ -170,10 +165,8 @@ class D4ScienceSpawner(KubeSpawner):
                         continue
                     name = profile.get("Name", "")
                     if name in self.server_options_names:
-                        self.server_options[p["ServerOption"]["AuthId"]] = p[
-                            "ServerOption"
-                        ]
-                        self.server_options[p["ServerOption"]["AuthId"]].update(
+                        server_options[p["ServerOption"]["AuthId"]] = p["ServerOption"]
+                        server_options[p["ServerOption"]["AuthId"]].update(
                             {"server_option_name": name}
                         )
                 elif p.get("VolumeOption", None):
@@ -182,6 +175,19 @@ class D4ScienceSpawner(KubeSpawner):
                     ]
         except KeyError:
             self.log.debug("Unexpected resource response from D4Science")
+        return server_options, volume_options
+
+    async def auth_state_hook(self, spawner, auth_state):
+        if not auth_state:
+            return
+        permissions = auth_state.get("permissions", [])
+        roles = auth_state.get("roles", [])
+        self.log.debug("Roles at hook: %s", roles)
+        self.allowed_profiles = [claim["rsname"] for claim in permissions]
+        resources = auth_state.get("resources", {})
+        self.server_options, volume_options = self.build_resource_options(
+            roles, resources
+        )
 
         self.volumes = self._orig_volumes.copy()
         self.volume_mounts = self._orig_volume_mounts.copy()
