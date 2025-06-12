@@ -1,5 +1,4 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
 from kubespawner import KubeSpawner
 from traitlets import Bool, Dict, List, Unicode

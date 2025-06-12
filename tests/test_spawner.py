@@ -1,12 +1,15 @@
 import pytest
 from d4science_hub.spawner import D4ScienceSpawner
 
+
 class DummyUser:
     name = "testuser"
     id = "testuser-id"
-    
+
+
 class DummySpawner:
     name = "rname-test"
+
 
 @pytest.mark.asyncio
 async def test_witoil_server_option_role():
@@ -27,15 +30,18 @@ async def test_witoil_server_option_role():
                             "Body": {
                                 "ServerOption": {
                                     "AuthId": "witoil-authid",
-                                    "Info": {"Name": "WITOIL Option", "Description": "desc"},
-                                    "@default": "true"
+                                    "Info": {
+                                        "Name": "WITOIL Option",
+                                        "Description": "desc",
+                                    },
+                                    "@default": "true",
                                 }
-                            }
+                            },
                         }
                     }
                 ]
             }
-        }
+        },
     }
     await spawner.auth_state_hook(dummy_spawner, auth_state_with_role)
     assert "witoil-authid" in spawner.server_options
@@ -44,7 +50,7 @@ async def test_witoil_server_option_role():
     auth_state_without_role = {
         "permissions": [{"rsname": "witoil-authid"}],
         "roles": [],
-        "resources": auth_state_with_role["resources"]
+        "resources": auth_state_with_role["resources"],
     }
     await spawner.auth_state_hook(dummy_spawner, auth_state_without_role)
     assert "witoil-authid" not in spawner.server_options

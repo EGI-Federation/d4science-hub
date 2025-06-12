@@ -1,5 +1,4 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
 import base64
 import json
