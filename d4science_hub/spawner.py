@@ -156,8 +156,6 @@ class D4ScienceSpawner(KubeSpawner):
                 if p.get("ServerOption", None):
                     # Check roles
                     role = p["ServerOption"].get("@role", "")
-                    print(role)
-                    print("#" * 80)
                     if role and role not in roles:
                         self.log.debug(
                             f"ServerOption role {role} not in users roles, discarding"
