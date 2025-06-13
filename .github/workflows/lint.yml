@@ -35,5 +35,5 @@ jobs:
           VALIDATE_PYTHON_PYLINT: false
           # this messes with jinja templates
           VALIDATE_HTML_PRETTIER: false
-          # We don't want to lint EC files
-          FILTER_REGEX_EXCLUDE: ".*/ecl-.*\\.(css|js)"
+          # Fake kubeconfig does not validate
+          VALIDATE_KUBERNETES_KUBECONFORM: false

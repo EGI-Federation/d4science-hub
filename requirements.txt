@@ -1,3 +1,4 @@
+# These are commented out to avoid issues when building the Dockerfile
 #jupyterhub>=5.2.1
 #oauthenticator>=17.1.0
 #jupyterhub-kubespawner>=7.0.0
