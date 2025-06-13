@@ -1,5 +1,4 @@
-"""D4Science Authenticator for JupyterHub
-"""
+"""D4Science Authenticator for JupyterHub"""
 
 import base64
 import json
@@ -169,6 +168,7 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
                 self.log.debug(req)
                 # no need to fail here
                 return wps_endpoint
+            self.log.debug(resp.body)
             dm = xmltodict.parse(resp.body)
             try:
                 for ap in dm["serviceEndpoints"]["Resource"]["Profile"]["AccessPoint"]:
