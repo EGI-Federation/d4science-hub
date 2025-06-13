@@ -23,4 +23,5 @@ jobs:
 
       - name: Run tests
         run: |
+          export KUBECONFIG=$PWD/tests/kubeconf.yaml
           pytest
