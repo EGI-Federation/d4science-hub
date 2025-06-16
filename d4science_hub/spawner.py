@@ -1,4 +1,4 @@
-"""D4Science Authenticator for JupyterHub"""
+"""D4Science Spawner for JupyterHub"""
 
 from jupyterhub.utils import maybe_future
 from kubespawner import KubeSpawner
@@ -115,7 +115,7 @@ class D4ScienceSpawner(KubeSpawner):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.allowed_profiles = []
-        self.server_options = []
+        self.server_options = {}
         self._orig_volumes = self.volumes
         self._orig_volume_mounts = self.volume_mounts
         if self.image_repo_override:
