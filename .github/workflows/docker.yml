@@ -42,7 +42,9 @@ jobs:
       - name: Build
         uses: docker/build-push-action@v6
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          #push: ${{ github.event_name != 'pull_request' && env.ACT != 'true' }}
+          push: ${{ github.event_name != 'pull_request' && env.ACT != 'true' }}
+          load: ${{ env.ACT == 'true' }}  # This loads the image into Docker locally
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           context: .
