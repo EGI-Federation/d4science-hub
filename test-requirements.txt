@@ -3,3 +3,4 @@ oauthenticator>=17.1.0
 jupyterhub-kubespawner>=7.0.0
 pytest
 pytest-asyncio
+pytest-cov
