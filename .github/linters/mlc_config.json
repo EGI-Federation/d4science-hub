@@ -1,10 +1,10 @@
 {
-	"ignorePatterns": [
-		{
-			"pattern": "^http://localhost"
-		},
-		{
-			"pattern": "^https://example.com"
-		}
-	]
+  "ignorePatterns": [
+    {
+      "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "^https://example.com"
+    }
+  ]
 }
