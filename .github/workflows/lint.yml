@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step to define 'ACT' environment variable only when running locally via 'act'.
-      # The 'if' condition is crucial: it sets ACT=true only if the environment variable
-      # is not already defined, which is the case when 'act' runs the workflow locally.
+      # Step to define 'ACT' envonment variable only when running locally via
+      #  'act'.
+      # The 'if' condition is crucial: it sets ACT=true only if the
+      #  environment variable is not already defined, which is the case when
+      #  'act' runs the workflow locally.
       - name: Set ACT environment variable for local testing
-        run: echo "ACT=true" >> $GITHUB_ENV
+        run: echo "ACT=true" >> "$GITHUB_ENV"
         if: env.ACT == ''
 
       # Checks out a copy of your repository on the ubuntu-latest machine
