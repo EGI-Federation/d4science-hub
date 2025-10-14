@@ -13,4 +13,3 @@ and this project adheres to
 ### Added
 
 - Bring D4Science components from egi-notebooks-hub package
-
