@@ -11,22 +11,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step to define 'ACT' environment variable only when running locally via 'act'.
+      # The 'if' condition is crucial: it sets ACT=true only if the environment variable
+      # is not already defined, which is the case when 'act' runs the workflow locally.
+      - name: Set ACT environment variable for local testing
+        run: echo "ACT=true" >> $GITHUB_ENV
+        if: env.ACT == ''
+
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Full git history needed to get proper list of changed files
+          # Full git history is always needed for Super-Linter to function correctly,
+          #  either for partial (PR) or full linting (act).
           fetch-depth: 0
 
       # Runs the Super-Linter action
-      - name: Run Super-Linter on new changes
+      - name: Run Super-Linter
         uses: github/super-linter@v7
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Only check new or edited files
-          VALIDATE_ALL_CODEBASE: false
-          # Fail on errors
+
+          # ----------------------------------------------------------------------
+          # CONDITIONAL LOGIC FOR ACT/GITHUB:
+          # If running on 'act' (env.ACT == 'true'), validate the WHOLE codebase
+          # (VALIDATE_ALL_CODEBASE: true) to bypass the fatal Git history errors.
+          # Otherwise (on GitHub), use partial linting logic (VALIDATE_ALL_CODEBASE: false).
+          # ----------------------------------------------------------------------
+          VALIDATE_ALL_CODEBASE: ${{ env.ACT == 'true' }}
+          # APPLY_FORMAT is now only set via the command line for local runs (act)
+          # DISABLE_ERRORS will stop the run on failure.
           DISABLE_ERRORS: false
           # JSCPD is failing in the symlink, so avoiding it
           VALIDATE_JSCPD: false
