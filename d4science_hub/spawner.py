@@ -296,7 +296,11 @@ class D4ScienceSpawner(KubeSpawner):
                     {"name": "D4SCIENCE_TOKEN", "value": token},
                 ],
                 "volumeMounts": [
-                    {"mountPath": "/workspace:shared", "name": "workspace"},
+                    {
+                        "name": "workspace",
+                        "mountPath": "/workspace",
+                        "mountPropagation": "Bidirectional",
+                    },
                 ],
                 "lifecycle": {
                     "preStop": {
@@ -315,6 +319,8 @@ class D4ScienceSpawner(KubeSpawner):
             await maybe_future(self.custom_user_options(self))
 
     async def pre_spawn_hook(self, spawner):
+        # Set the security context for the main user container
+        spawner.container_security_context = self.workspace_security_context
         context = spawner.environment.get("D4SCIENCE_CONTEXT", "")
         if context:
             # set the whole context as annotation (needed for accounting)
