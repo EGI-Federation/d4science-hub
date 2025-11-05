@@ -12,7 +12,7 @@ from oauthenticator.generic import GenericOAuthenticator
 from oauthenticator.oauth2 import OAuthLoginHandler
 from tornado import web
 from tornado.httpclient import AsyncHTTPClient, HTTPError, HTTPRequest
-from traitlets import Unicode
+from traitlets import List, Unicode
 
 D4SCIENCE_REGISTRY_BASE_URL = os.environ.get(
     "D4SCIENCE_REGISTRY_BASE_URL",
@@ -45,6 +45,14 @@ class D4ScienceContextHandler(OAuthLoginHandler):
         self.authenticator.d4science_context = context
         self.authenticator.d4science_namespace = namespace
         self.authenticator.d4science_label = label
+        if self.authenticator.use_dynamic_scope:
+            # just keep this for later if we are recalled
+            scope = getattr(
+                self.authenticator, "configured_scope", self.authenticator.scope
+            )
+            self.authenticatr.configured_scope = scope
+            new_scope = scope.copy().append(f"d4s-context:{context}")
+            self.authenticatr.scope = new_scope
         return super().get()
 
 
@@ -78,6 +86,12 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
         help="""The name of the label to use when setting extra labels
                 coming from the authentication (i.e. label="blue-cloud"
                 as param)""",
+    )
+    use_dynamic_scopes = Bool(True, config=True, help="""Whether to use the scope""")
+    scope = List(
+        ["openid", "extended_profile"],
+        config=True,
+        help="""The OAuth scopes to request.""",
     )
 
     _pubkeys = None
@@ -240,7 +254,7 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
         self.log.debug("Resources: %s", resources)
         user_data["auth_state"].update(
             {
-                "context_token": ws_token,
+                "access_token": access_token,
                 "permissions": permissions,
                 "context": context,
                 "namespace": self._get_d4science_attr("d4science_namespace"),
@@ -266,8 +280,8 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
         if label:
             spawner.extra_labels[self.d4science_label_name] = label
         # GCUBE_TOKEN should be removed in the future
-        spawner.environment["GCUBE_TOKEN"] = auth_state["context_token"]
-        spawner.environment["D4SCIENCE_TOKEN"] = auth_state["context_token"]
+        spawner.environment["GCUBE_TOKEN"] = auth_state["access_token"]
+        spawner.environment["D4SCIENCE_TOKEN"] = auth_state["access_token"]
         # GCUBE_CONTEXT should be removed in the future
         spawner.environment["GCUBE_CONTEXT"] = unquote(auth_state["context"])
         spawner.environment["D4SCIENCE_CONTEXT"] = unquote(auth_state["context"])
