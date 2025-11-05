@@ -87,7 +87,7 @@ class D4ScienceOauthenticator(GenericOAuthenticator):
                 coming from the authentication (i.e. label="blue-cloud"
                 as param)""",
     )
-    use_dynamic_scopes = Bool(True, config=True, help="""Whether to use the scope""")
+    use_dynamic_scope = Bool(True, config=True, help="""Whether to use the scope""")
     scope = List(
         ["openid", "extended_profile"],
         config=True,
