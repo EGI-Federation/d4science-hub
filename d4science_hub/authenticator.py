@@ -51,7 +51,8 @@ class D4ScienceContextHandler(OAuthLoginHandler):
                 self.authenticator, "configured_scope", self.authenticator.scope
             )
             self.authenticator.configured_scope = scope
-            new_scope = scope.copy().append(f"d4s-context:{context}")
+            new_scope = scope.copy()
+            new_scope.append(f"d4s-context:{context}")
             self.authenticator.scope = new_scope
         return super().get()
 
