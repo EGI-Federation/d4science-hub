@@ -61,6 +61,22 @@ async def test_custom_user_options():
 
 
 @pytest.mark.asyncio
+async def test_profile_annotations():
+    spawner = D4ScienceSpawner(_mock=True)
+    spawner.allowed_profiles = ["foo"]
+    spawner.server_options = [
+        {
+            "AuthId": "foo",
+            "server_option_name": "ServerOption",
+        }
+    ]
+    p = spawner.profile_list(spawner)
+    assert p.pop()["kubespawner_override"]["extra_annotations"] == {
+        "hub.jupyter.org/profile": "foo"
+    }
+
+
+@pytest.mark.asyncio
 async def test_get_args():
     spawner = D4ScienceSpawner(_mock=True)
     spawner.default_url = "/foo"

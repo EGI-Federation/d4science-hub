@@ -233,7 +233,7 @@ class D4ScienceSpawner(KubeSpawner):
                 auth_id = p.get("AuthId", "")
                 if auth_id not in self.allowed_profiles:
                     continue
-                override = {}
+                override = {"extra_annotations": {"hub.jupyter.org/profile": auth_id}}
                 name = p.get("Info", {}).get("Name", "")
                 if p.get("server_option_name", "") != server_option_name:
                     self.log.debug(
