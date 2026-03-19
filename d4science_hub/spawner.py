@@ -233,7 +233,7 @@ class D4ScienceSpawner(KubeSpawner):
                 auth_id = p.get("AuthId", "")
                 if auth_id not in self.allowed_profiles:
                     continue
-                override = {"extra_annotations": {"hub.jupyter.org/profile": auth_id}}
+                override = {"extra_annotations": {"d4science.net/profile": auth_id}}
                 name = p.get("Info", {}).get("Name", "")
                 if p.get("server_option_name", "") != server_option_name:
                     self.log.debug(
@@ -318,7 +318,7 @@ class D4ScienceSpawner(KubeSpawner):
         context = spawner.environment.get("D4SCIENCE_CONTEXT", "")
         if context:
             # set the whole context as annotation (needed for accounting)
-            spawner.extra_annotations["d4science_context"] = context
+            spawner.extra_annotations["d4science.net/context"] = context
             # set only the VRE name in the environment (needed for NFS subpath)
             vre = context[context.rindex("/") + 1 :]
             spawner.log.debug("VRE: %s", vre)
