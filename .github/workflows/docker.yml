@@ -4,7 +4,7 @@ name: Build and push containers
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
 
 permissions: read-all
@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # This is needed for PBR get the right version
           fetch-depth: 0
@@ -24,7 +24,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
-          images: eginotebooks/d4science-hub
+          images: harbor.d4science.org/jupyterlab/hub
           tags: |
             type=sha
             type=pep440,pattern={{version}}
@@ -36,6 +36,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
+          registry: harbor.d4science.org
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
         if: github.event_name != 'pull_request'
