@@ -233,7 +233,6 @@ class D4ScienceSpawner(KubeSpawner):
                 auth_id = p.get("AuthId", "")
                 if auth_id not in self.allowed_profiles:
                     continue
-                override = {"extra_annotations": {"d4science.net/profile": auth_id}}
                 name = p.get("Info", {}).get("Name", "")
                 if p.get("server_option_name", "") != server_option_name:
                     self.log.debug(
@@ -242,6 +241,12 @@ class D4ScienceSpawner(KubeSpawner):
                         p.get("server_option_name", ""),
                     )
                     continue
+                override = {
+                    "extra_annotations": {
+                        "d4science.net/profile": auth_id,
+                        "d4science.net/server_option": server_option_name,
+                    }
+                }
                 if "ImageId" in p:
                     image = p.get("ImageId", "")
                     if self.image_repo_override:
