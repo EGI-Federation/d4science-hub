@@ -73,7 +73,7 @@ async def test_profile_annotations():
     p = spawner.profile_list(spawner)
     assert p.pop()["kubespawner_override"]["extra_annotations"] == {
         "d4science.net/profile": "foo",
-        "d4science.net/server_option": "ServerOption"
+        "d4science.net/server_option": "ServerOption",
     }
 
 
