@@ -233,8 +233,8 @@ class D4ScienceSpawner(KubeSpawner):
                 auth_id = p.get("AuthId", "")
                 if auth_id not in self.allowed_profiles:
                     continue
-                override = {"extra_annotations": {"d4science.net/profile": auth_id}}
                 name = p.get("Info", {}).get("Name", "")
+                profile_annotation = auth_id
                 if p.get("server_option_name", "") != server_option_name:
                     self.log.debug(
                         "Discarding %s as it uses %s",
@@ -242,6 +242,8 @@ class D4ScienceSpawner(KubeSpawner):
                         p.get("server_option_name", ""),
                     )
                     continue
+                override = {}
+                resources_info = []
                 if "ImageId" in p:
                     image = p.get("ImageId", "")
                     if self.image_repo_override:
@@ -249,21 +251,32 @@ class D4ScienceSpawner(KubeSpawner):
                         image = f"{self.image_repo_override}/{image}"
                     override["image"] = image
                 if "Cut" in p:
-                    cut_info = []
                     if "Cores" in p["Cut"]:
                         override["cpu_limit"] = float(p["Cut"]["Cores"])
                         override["cpu_guarantee"] = (
                             1 if override["cpu_limit"] <= 4 else 2
                         )
-                        cut_info.append(f"{p['Cut']['Cores']} Cores")
+                        resources_info.append(f"{p['Cut']['Cores']} Cores")
                     if "Memory" in p["Cut"]:
                         override["mem_limit"] = (
                             "%(#text)s%(@unit)s" % p["Cut"]["Memory"]
                         )
-                        cut_info.append(f"{override['mem_limit']} RAM")
-                    name += " - %s" % " / ".join(cut_info)
+                        resources_info.append(f"{override['mem_limit']} RAM")
                 if p.get("@gpu", {}) == "true":
                     override.update(self.gpu_override)
+                    resources_info.append("GPU")
+
+                if resources_info:
+                    name += f" - {' / '.join(resources_info)}"
+                    profile_annotation += f";{' '.join(resources_info)}"
+                override.update(
+                    {
+                        "extra_annotations": {
+                            "d4science.net/profile": profile_annotation,
+                            "d4science.net/server_option": server_option_name,
+                        }
+                    }
+                )
                 profile = {
                     "display_name": name,
                     "description": p.get("Info", {}).get("Description", ""),
