@@ -13,27 +13,28 @@ jobs:
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           # Full git history needed to get proper list of changed files
           fetch-depth: 0
+          persist-credentials: false
 
       # Runs the Super-Linter action
       - name: Run Super-Linter on new changes
-        uses: github/super-linter@v7
+        uses: super-linter/super-linter@4ce20838b8ab83717e78138c5b3a1407148e0918
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Only check new or edited files
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: true
           # Fail on errors
           DISABLE_ERRORS: false
           # JSCPD is failing in the symlink, so avoiding it
-          VALIDATE_JSCPD: false
+          #VALIDATE_JSCPD: false
           # Pylint is too picky about everything, not ready
           # for this yet here
-          VALIDATE_PYTHON_PYLINT: false
+          #VALIDATE_PYTHON_PYLINT: false
           # this messes with jinja templates
-          VALIDATE_HTML_PRETTIER: false
+          #VALIDATE_HTML_PRETTIER: false
           # Fake kubeconfig does not validate
-          VALIDATE_KUBERNETES_KUBECONFORM: false
+          #VALIDATE_KUBERNETES_KUBECONFORM: false
