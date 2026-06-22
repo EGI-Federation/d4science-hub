@@ -36,3 +36,7 @@ jobs:
           #VALIDATE_HTML_PRETTIER: false
           # Fake kubeconfig does not validate
           VALIDATE_KUBERNETES_KUBECONFORM: false
+          # Disable conflicting linters
+          VALIDATE_BIOME_LINT: false
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_PYTHON_RUFF_FORMAT: false
