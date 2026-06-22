@@ -26,14 +26,14 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Only check new or edited files
-          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_ALL_CODEBASE: false 
           # Fail on errors
           DISABLE_ERRORS: false
           # Pylint is too picky about everything, not ready
           # for this yet here
           VALIDATE_PYTHON_PYLINT: false
           # this messes with jinja templates
-          #VALIDATE_HTML_PRETTIER: false
+          VALIDATE_HTML_PRETTIER: false
           # Fake kubeconfig does not validate
           VALIDATE_KUBERNETES_KUBECONFORM: false
           # Disable conflicting linters
