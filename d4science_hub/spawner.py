@@ -101,14 +101,14 @@ class D4ScienceSpawner(KubeSpawner):
         config=True,
         help="""
         Callable to add extra configuration for the spawner during the
-        load_user_options, which is called just at the begginig of the
+        load_user_options, which is called just at the beginning of the
         start() method.
 
         Expects a callable that takes one parameter: The spawner object that
         is doing the spawning
 
         This can be a coroutine if necessary. When set to none, no extra
-        configruation is done.
+        configuration is done.
         """,
     )
 

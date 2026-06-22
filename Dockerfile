@@ -3,7 +3,7 @@ FROM quay.io/jupyterhub/k8s-hub:4.4.0
 
 USER root
 
-# Do installation in 2 phases to cache dependendencies
+# Do installation in 2 phases to cache dependencies
 COPY requirements.txt /d4science-hub/
 RUN pip3 install --no-cache-dir -r /d4science-hub/requirements.txt
 
