@@ -6,6 +6,7 @@ permissions:
   pull-requests: write
   issues: write
   contents: write
+  workflows: write
 
 jobs:
   dependabot:
@@ -27,8 +28,7 @@ jobs:
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Auto-merge for Dependabot PRs
-        if: contains(steps.metadata.outputs.package-ecosystem, 'github_actions') || steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --merge "$PR_URL"
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
