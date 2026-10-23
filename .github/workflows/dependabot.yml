@@ -6,6 +6,7 @@ permissions:
   pull-requests: write
   issues: write
   contents: write
+  workflows: write
 
 jobs:
   dependabot:
